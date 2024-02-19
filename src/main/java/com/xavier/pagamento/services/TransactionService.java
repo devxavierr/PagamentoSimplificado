@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class TransactionService {
@@ -23,8 +24,10 @@ public class TransactionService {
     private TransactionRepository repository;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private NotificationService notificationService;
 
-    public void createTransaction(TransactionDTO transaction) throws Exception {
+    public Transaction createTransaction(TransactionDTO transaction) throws Exception {
         User sender = this.userService.findUserById(transaction.senderId());
         User receiver = this.userService.findUserById(transaction.receiverId());
 
@@ -48,13 +51,18 @@ public class TransactionService {
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
 
+        this.notificationService.sendNotification(sender, "Transação realizada com sucesso");
+        this.notificationService.sendNotification(receiver, "Transação recebida com sucesso");
+
+        return newTransaction;
+
     }
 
     public boolean autorizeTransaction(User sender, BigDecimal value) {
-        ResponseEntity<Map> autorizationResponse = restTemplate.getForEntity("https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc", Map.class);
+        ResponseEntity<Map> authorizetionResponse = restTemplate.getForEntity("https://run.mocky.io/v3/5794d450-d2e2-4412-8131-73d0293ac1cc", Map.class);
 
-        if (autorizationResponse.getStatusCode() == HttpStatus.OK) {
-            String message = (String) autorizationResponse.getBody().get("message");
+        if (authorizetionResponse.getStatusCode() == HttpStatus.OK) {
+            String message = (String) Objects.requireNonNull(authorizetionResponse.getBody()).get("message");
             return "Autorizado".equalsIgnoreCase(message);
         } else return false;
 

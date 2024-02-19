@@ -38,6 +38,4 @@ public class User {
         this.balance = user.balance();
         this.userType = user.userType();
     }
-
-
 }

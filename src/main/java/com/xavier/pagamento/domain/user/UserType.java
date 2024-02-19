@@ -1,5 +1,5 @@
 package com.xavier.pagamento.domain.user;
 
 public enum UserType {
-    COMMON, MERCANT
+    COMMON, MERCHANT;
 }
